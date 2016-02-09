@@ -21,8 +21,9 @@ str(data)
 
 ```{r}
 data %>% group_by(State) %>% tally(sort = T) -> State.count
+State.count$State %>% factor(levels=rev(State.count$State)) -> State.count$State 
 
-ggplot(State.count, aes(x=State, y=n)) + geom_bar() + coord_flip()
+ggplot(State.count, aes(x=State, y=n)) + geom_bar(stat="identity", position = position_dodge(width=0.5)) + coord_flip()
 ```
 
 
