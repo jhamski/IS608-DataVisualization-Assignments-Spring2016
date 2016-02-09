@@ -4,4 +4,38 @@ author: "J. Hamski"
 date: "February 7, 2016"
 output: html_document
 ---
+```{r}
+library(readr)
+library(ggplot2)
+library(dplyr)
+```
+
+
+```{r}
+data <- read_csv("inc5000_data.csv")
+str(data)
+```
+
+
+1. Create a graph that shows the distribution of companies in the dataset by State (ie how many are in each state). There are a lot of States, so consider which axis you should use assuming I am using a ‘portrait’ oriented screen (ie taller than wide). 
+
+```{r}
+data %>% group_by(State) %>% tally(sort = T) -> State.count
+
+ggplot(State.count, aes(x=State, y=n)) + geom_bar() + coord_flip()
+```
+
+
+2. Let’s dig in on the State with the 3rd most companies in the data set. Imagine you work for the state and are interested in how many people are employed by companies in different industries employ. Create a plot of average employment by industry for companies in this state (only use cases with full data (user R’s complete.cases() function). Your graph should show how variable the ranges are, and exclude outliers. 
+
+```{r}
+
+```
+
+
+3. Now imagine you work for an investor and want to see which industries generate the most revenue per employee. Create a chart makes this information clear. 
+
+```{r}
+
+```
 
