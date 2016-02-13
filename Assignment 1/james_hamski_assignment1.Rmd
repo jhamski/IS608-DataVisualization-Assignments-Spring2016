@@ -28,9 +28,9 @@ state.count
 ```
 
 ```{r}
-us <- map_data("state")
+#us <- map_data("state")
 
-ggplot() + geom_map(data=State.count, map=us, aes(map_id=State,fill=n))
+#ggplot() + geom_map(data=State.count, map=us, aes(map_id=State,fill=n))
 
 ```
 
@@ -46,10 +46,15 @@ Average employment by industry.
 ```{r}
 NY.employment <- data %>% 
   filter(State=="NY") %>%
-  filter(Employees != "NA") %>%
+  filter(Employees != "NA") %>% #instead of complete.cases
   group_by(Industry) %>%
-  summarize(ave = mean(Employees))
+  select(Employees, Industry)
   
+```
+
+
+```{r}
+ggplot(NY.employment, aes(x=Industry, y=Employees)) + stat_boxplot()
 ```
 
 
