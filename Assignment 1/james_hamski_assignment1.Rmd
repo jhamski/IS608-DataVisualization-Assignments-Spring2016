@@ -4,7 +4,7 @@ author: "J. Hamski"
 date: "February 7, 2016"
 output: html_document
 ---
-```{r}
+```{r, warning=F, message=F}
 library(readr)
 library(ggplot2)
 library(dplyr)
@@ -45,16 +45,26 @@ State.count[3,]
 Average employment by industry.
 ```{r}
 NY.employment <- data %>% 
-  filter(State=="NY") %>%
+  filter(State == "NY") %>%
   filter(Employees != "NA") %>% #instead of complete.cases
-  group_by(Industry) %>%
+  #group_by(Industry) %>%
   select(Employees, Industry)
-  
+
+NY.employment.means <- aggregate(Employees ~ Industry, data = NY.employment, mean)
+NY.employment.means$sd <- aggregate(Employees ~ Industry, data = NY.employment, sd)$Employees
+
+summarize(group_by(NY.employment, Industry), mean)
+```
+
+```{r}
+ggplot(NY.employment.means, aes(x=Industry, y=Employees)) + geom_point(color="red") + coord_flip() + geom_errorbar(aes(ymin=sd*-1, ymax=sd))
 ```
 
 
-```{r}
-ggplot(NY.employment, aes(x=Industry, y=Employees)) + stat_boxplot()
+
+As a side note this was my first attempt. 
+```{r, warning=FALSE}
+ggplot(NY.employment, aes(x=Industry, y=Employees)) + stat_boxplot(outlier.shape = NA) + scale_y_continuous(limits=c(0,1000)) + coord_flip() 
 ```
 
 
