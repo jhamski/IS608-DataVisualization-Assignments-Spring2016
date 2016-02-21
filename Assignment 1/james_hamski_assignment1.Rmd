@@ -16,13 +16,43 @@ data <- read_csv("inc5000_data.csv")
 str(data)
 ```
 
+```{r}
+#Jim's House Theme
+JHT <-function(){
+  color.plot.area = "ivory"
+  color.background = "white"
+  color.grid.major = "black"
+  color.axis.text = "gray29"
+  color.axis.title = "gray29"
+  color.title = "gray29"
+
+  theme_bw(base_size=9) +
+    theme(panel.background=element_rect(fill=color.plot.area, color=color.plot.area)) +
+    theme(plot.background=element_rect(fill=color.background, color=color.background)) +
+    theme(panel.border=element_rect(color="gray20", size = 0.15)) +
+    theme(panel.grid.major.x=element_line(color=color.grid.major,size=.25, 
+                                        linetype = "longdash")) +
+    theme(panel.grid.major.y=element_line(color=color.grid.major,size=.25, 
+                                        linetype = "dotted")) + 
+    theme(axis.line = element_line(color=color.grid.major, size = .5))+
+    theme(panel.grid.minor=element_blank()) +
+    theme(plot.title=element_text(color=color.title, size=10)) +
+    theme(axis.text.x=element_text(size=12,color=color.axis.text)) +
+    theme(axis.text.y=element_text(size=12,color=color.axis.text)) +
+    theme(axis.title.x=element_text(size=14,color=color.axis.title, face = "bold")) +
+    theme(axis.title.y=element_text(size=14,color=color.axis.title, face = "bold")) 
+}
+```
+
+
+
 1. Create a graph that shows the distribution of companies in the dataset by State (ie how many are in each state). There are a lot of States, so consider which axis you should use assuming I am using a ‘portrait’ oriented screen (ie taller than wide). 
 
 ```{r}
 data %>% group_by(State) %>% tally(sort = T) -> State.count
 State.count$State %>% factor(levels = rev(State.count$State)) -> State.count$State 
 
-state.count <- ggplot(State.count, aes(x=State, y=n)) + geom_bar(stat="identity", position = position_dodge(width=0.5), color = "black", alpha=0.25) + labs(title="Distribution of companies in the dataset by State", y="Count of Companies in State", x="State") + coord_flip()
+state.count <- ggplot(State.count, aes(x=State, y=n)) + geom_bar(stat="identity", color = "black", alpha=0.25, position = position_dodge(width = 2.90)) + labs(title="Distribution of companies in the dataset by state", y="Number of Companies", x="State") + coord_flip() 
 
 state.count
 ```
@@ -47,24 +77,25 @@ Average employment by industry.
 NY.employment <- data %>% 
   filter(State == "NY") %>%
   filter(Employees != "NA") %>% #instead of complete.cases
-  #group_by(Industry) %>%
+  group_by(Industry) %>%
   select(Employees, Industry)
 
 NY.employment.means <- aggregate(Employees ~ Industry, data = NY.employment, mean)
-NY.employment.means$sd <- aggregate(Employees ~ Industry, data = NY.employment, sd)$Employees
 
-summarize(group_by(NY.employment, Industry), mean)
+NY.employment.fivenum <- aggregate(Employees ~ Industry, data = NY.employment, FUN=fivenum)$Employees
+NY.employment.fivenum <- as.data.frame(NY.employment.fivenum)
 ```
-
+Average defined as the arithmetic mean:
 ```{r}
-ggplot(NY.employment.means, aes(x=Industry, y=Employees)) + geom_point(color="red") + coord_flip() + geom_errorbar(aes(ymin=sd*-1, ymax=sd))
+limits <- aes(ymax = NY.employment.fivenum$V2, ymin = NY.employment.fivenum$V4)
+
+ggplot(NY.employment.means, aes(x = Industry, y = Employees)) + geom_point(color = "red") + coord_flip() + geom_errorbar(limits) + JHT()
 ```
 
-
-
-As a side note this was my first attempt. 
-```{r, warning=FALSE}
-ggplot(NY.employment, aes(x=Industry, y=Employees)) + stat_boxplot(outlier.shape = NA) + scale_y_continuous(limits=c(0,1000)) + coord_flip() 
+Average defined as the median:
+```{r}
+NY.employment.all <- cbind(NY.employment.means, NY.employment.fivenum)
+ggplot(NY.employment.all, aes(x = Industry, y = V3)) + geom_point(color = "red") + coord_flip() + geom_errorbar(limits) + JHT()
 ```
 
 
