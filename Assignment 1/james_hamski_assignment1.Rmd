@@ -16,14 +16,15 @@ data <- read_csv("inc5000_data.csv")
 str(data)
 ```
 
+I have my own "house theme" which is just a custom theme that has some of my personal preferences. If your work is going to be presesnted someplace you can take a lot of presentational liberties, like blog posts, presentations, or school work, it's nice to have your own brand. 
 ```{r}
 #Jim's House Theme
 JHT <-function(){
   color.plot.area = "ivory"
   color.background = "white"
-  color.grid.major = "black"
-  color.axis.text = "gray29"
-  color.axis.title = "gray29"
+  color.grid.major = "gray29"
+  color.axis.text = "gray16"
+  color.axis.title = "Black"
   color.title = "gray29"
 
   theme_bw(base_size=9) +
@@ -36,36 +37,26 @@ JHT <-function(){
                                         linetype = "dotted")) + 
     theme(axis.line = element_line(color=color.grid.major, size = .5))+
     theme(panel.grid.minor=element_blank()) +
-    theme(plot.title=element_text(color=color.title, size=10)) +
-    theme(axis.text.x=element_text(size=12,color=color.axis.text)) +
-    theme(axis.text.y=element_text(size=12,color=color.axis.text)) +
-    theme(axis.title.x=element_text(size=14,color=color.axis.title, face = "bold")) +
-    theme(axis.title.y=element_text(size=14,color=color.axis.title, face = "bold")) 
+    theme(plot.title=element_text(color=color.title, size=14, face = "bold")) +
+    theme(axis.text.x=element_text(size=9,color=color.axis.text)) +
+    theme(axis.text.y=element_text(size=9,color=color.axis.text)) +
+    theme(axis.title.x=element_text(size=12,color=color.axis.title)) +
+    theme(axis.title.y=element_text(size=12,color=color.axis.title)) 
 }
 ```
 
-
-
-1. Create a graph that shows the distribution of companies in the dataset by State (ie how many are in each state). There are a lot of States, so consider which axis you should use assuming I am using a ‘portrait’ oriented screen (ie taller than wide). 
+###1. Create a graph that shows the distribution of companies in the dataset by State (ie how many are in each state). There are a lot of States, so consider which axis you should use assuming I am using a ‘portrait’ oriented screen (ie taller than wide). 
 
 ```{r}
 data %>% group_by(State) %>% tally(sort = T) -> State.count
 State.count$State %>% factor(levels = rev(State.count$State)) -> State.count$State 
 
-state.count <- ggplot(State.count, aes(x=State, y=n)) + geom_bar(stat="identity", color = "black", alpha=0.25, position = position_dodge(width = 2.90)) + labs(title="Distribution of companies in the dataset by state", y="Number of Companies", x="State") + coord_flip() 
+state.count <- ggplot(State.count, aes(x=State, y=n)) + geom_bar(stat="identity", color = "black", alpha=0.25, position = position_dodge(width = 0,5)) + labs(title="Distribution of companies in the dataset by state", y="Number of Companies", x="State") + coord_flip() + JHT()
 
 state.count
 ```
 
-```{r}
-#us <- map_data("state")
-
-#ggplot() + geom_map(data=State.count, map=us, aes(map_id=State,fill=n))
-
-```
-
-
-2. Let’s dig in on the State with the 3rd most companies in the data set. Imagine you work for the state and are interested in how many people are employed by companies in different industries employ. Create a plot of average employment by industry for companies in this state (only use cases with full data (user R’s complete.cases() function). Your graph should show how variable the ranges are, and exclude outliers. 
+###2. Let’s dig in on the State with the 3rd most companies in the data set. Imagine you work for the state and are interested in how many people are employed by companies in different industries employ. Create a plot of average employment by industry for companies in this state (only use cases with full data (user R’s complete.cases() function). Your graph should show how variable the ranges are, and exclude outliers. 
 
 State with the 3rd most companies
 ```{r}
@@ -83,11 +74,14 @@ NY.employment <- data %>%
 NY.employment.means <- aggregate(Employees ~ Industry, data = NY.employment, mean)
 
 NY.employment.fivenum <- aggregate(Employees ~ Industry, data = NY.employment, FUN=fivenum)$Employees
+
 NY.employment.fivenum <- as.data.frame(NY.employment.fivenum)
 ```
 Average defined as the arithmetic mean:
 ```{r}
 limits <- aes(ymax = NY.employment.fivenum$V2, ymin = NY.employment.fivenum$V4)
+
+NY.employment.means$Industry <- factor(NY.employment.means$Industry, levels=rev(NY.employment.means$Industry))
 
 ggplot(NY.employment.means, aes(x = Industry, y = Employees)) + geom_point(color = "red") + coord_flip() + geom_errorbar(limits) + JHT()
 ```
@@ -95,13 +89,35 @@ ggplot(NY.employment.means, aes(x = Industry, y = Employees)) + geom_point(color
 Average defined as the median:
 ```{r}
 NY.employment.all <- cbind(NY.employment.means, NY.employment.fivenum)
+
+NY.employment.all$Industry <- factor(NY.employment.all$Industry, levels=rev(NY.employment.all$Industry))
+
 ggplot(NY.employment.all, aes(x = Industry, y = V3)) + geom_point(color = "red") + coord_flip() + geom_errorbar(limits) + JHT()
 ```
 
 
-3. Now imagine you work for an investor and want to see which industries generate the most revenue per employee. Create a chart makes this information clear. 
+###3. Now imagine you work for an investor and want to see which industries generate the most revenue per employee. Create a chart makes this information clear. 
+
+It was tough to decide whether to order these alphabetically or by revenue per employee, decending. I decided to do alphabetically because if I was reading a paper with the above graphs, a consistent axis would be clearer to me than one with differing orders depending on the metric shown. 
 
 ```{r}
+NY.rev <- data %>% 
+  filter(State == "NY") %>%
+  filter(Employees != "NA") %>% #instead of complete.cases
+  group_by(Industry) %>%
+  select(Employees, Industry, Revenue)
 
+NY.industry.rev <- aggregate(Employees ~ Industry, data = NY.rev, sum)
+NY.industry.rev$Revenue <- aggregate(Revenue ~ Industry, data = NY.rev, sum)$Revenue
+
+NY.industry.rev$RevPerEmployee <- NY.industry.rev$Revenue / NY.industry.rev$Employees
+
+NY.industry.rev$Industry <- factor(NY.industry.rev$Industry, levels=rev(NY.industry.rev$Industry))
+```
+
+```{r}
+rev.graph <- ggplot(NY.industry.rev, aes(x=Industry, y=RevPerEmployee)) + geom_bar(stat="identity", color = "black", alpha=0.25, position = position_dodge(width = 3)) + labs(title="Revenue Per Employee for each Industry", y="Revenue Employee", x="Industry") + coord_flip() + JHT()
+
+rev.graph
 ```
 
