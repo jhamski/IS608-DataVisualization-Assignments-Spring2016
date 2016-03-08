@@ -1,0 +1,222 @@
+---
+title: "IS608 - HW2"
+author: "J. Hamski"
+date: "March 8, 2016"
+output: html_document
+---
+
+---
+title: "IS608 - HW2"
+author: "Jim Hamski"
+date: "3/5/2016"
+output: pdf_document
+---
+
+```{r}
+# load the Hadley-verse
+library("readr")
+library("bigvis")
+library("dplyr")
+library("ggplot2")
+library("tidyr")
+
+library("corrplot")
+```
+
+The following bash scripts were run in the SSH terminal. It is possible to specify the engine in an Rmarkdown document and do it from here, but since they only need to be used once, I got it out of the way via the terminal.
+
+$ wget http://www1.nyc.gov/assets/planning/download/zip/data-maps/open-data/nyc_pluto_15v1.zip
+
+$ unzip nyc_pluto_15v1.zip
+
+$ awk 'FNR==1 && NR!=1{next;}{print}' *.csv > nyc.csv
+
+```{r}
+nyc.taxplots <- read_csv("nyc.csv")
+
+str(nyc.taxplots)
+```
+
+*Build a graph to help the city determine when most buildings were constructed.*
+```{r}
+nyc.taxplots$YearBuilt[nyc.taxplots$YearBuilt == 0 ] <- NA
+nyc.taxplots <- filter(nyc.taxplots, YearBuilt > 1849)
+year.built <- condense(bin(nyc.taxplots$YearBuilt))
+colnames(year.built) <- c("Year", "BldCount")
+
+ggplot(year.built) + geom_line(aes(x = Year, y = BldCount))
+```
+
+The graph indicates that many YearBuilt values are rounded to the nearest year divisible by 10 (ie binned by decade). This is indicated by the even spacing between the noticably large spikes in building counts. 
+
+In addition, the maximum value for YearBuilt is 2040, 24 years into the future. 
+```{r}
+summary(year.built)
+```
+
+Specifying a bin width of 10 years gives a much more lucid result.
+```{r}
+nyc.taxplots <- filter(nyc.taxplots, YearBuilt < 2016)
+
+year.built <- condense(bin(nyc.taxplots$YearBuilt, width = 10))
+colnames(year.built) <- c("Year", "BldCount")
+ggplot(year.built) + geom_line(aes(x = Year, y = BldCount))
+```
+
+However, I'm still not satisfied this answers the question: *when were most buildings constructed?* 'Most' is ambiguous, I don't want to define it as the median or an arbitrary percentile. Therefore, I would deliver the City a graph show cumulative number of buildings constructed from 1850 to 2006. This way, the user can easily slide their finger across from a given percentage and determine how many buildings had been built by that year. 
+
+The downside to this result is that I need to visually estimate the slope of the line to reallly realize that most housing was build in the early 1900's. Other graphs may show this build-out more obviously. 
+
+```{r}
+bld.sum <- sum(year.built$BldCount)
+year.built$BldCumulative <- cumsum(year.built$BldCount) / bld.sum
+
+ggplot(year.built) + 
+  geom_line(aes(x = Year, y = BldCumulative)) + 
+  theme(panel.grid.minor = element_line(size=0.5)) + 
+  theme(panel.grid.major.y = element_line(colour = "black", linetype = "dashed")) +
+  scale_x_continuous(breaks = seq(1850, 2020, 10), minor_breaks = seq(1850, 2020, 5)) +
+  scale_y_continuous(labels = scales::percent) +
+  ggtitle("Cumulative Graph of Building Construction by Decade, NYC 1850 - 2016")
+```
+
+*Create a graph that shows how many buildings of a certain number of floors were built in each year.*
+
+My initial idea: a 'heatmap' style graph where each column shows the distribution of the building floors for that decade. This was a poor choice, as the lousy code below will show. 
+```{r}
+floors.years <- select(nyc.taxplots, YearBuilt, NumFloors)
+
+floors.years$YearBuilt <- floors.years$YearBuilt - (floors.years$YearBuilt %% 10)
+
+floors.years$NumFloors <- round(floors.years$NumFloors, 0)
+
+floors.years$NumFloors[floors.years$NumFloors == 0 ] <- NA
+```
+
+```{r}
+years <- seq(from = 1850, to = 2010, by = 10)
+
+filter.cnt <- function(year){
+  year.data <- filter(floors.years, YearBuilt == year)
+  cnt.floors <- count(year.data, NumFloors)
+  cnt.floors<- as.data.frame(cnt.floors[1:2])
+  
+  return(cnt.floors)}
+
+cnt.floors <- lapply(years, FUN = filter.cnt)
+```
+
+```{r}
+# I realize this is ugly...there's some problems (I think related to column naming) with applying full_join to the data frames in the list that I couldn't fix in a for loop. I So, I got frustrated and hard-coded the below. With more time I would refactor. 
+
+# It also occured to me that this wide, columnuar representation of the data isn't 'tidy' and should probably be completely re-thought. 
+
+comb.cnt.floors <- full_join(cnt.floors[[16]], cnt.floors[[17]], by = "NumFloors")
+colnames(comb.cnt.floors) <- c("NumFloors", "2000", "2010")
+
+comb.cnt.floors<- full_join(cnt.floors[[15]], comb.cnt.floors, by = "NumFloors")
+
+comb.cnt.floors<- full_join(cnt.floors[[14]], comb.cnt.floors, by = "NumFloors")
+
+comb.cnt.floors<- full_join(cnt.floors[[13]], comb.cnt.floors, by = "NumFloors")
+
+colnames(comb.cnt.floors) <- c("NumFloors","1970", "1980", "1990", "2000", "2010")
+
+comb.cnt.floors<- full_join(cnt.floors[[12]], comb.cnt.floors, by = "NumFloors")
+
+comb.cnt.floors<- full_join(cnt.floors[[11]], comb.cnt.floors, by = "NumFloors")
+
+comb.cnt.floors<- full_join(cnt.floors[[10]], comb.cnt.floors, by = "NumFloors")
+
+colnames(comb.cnt.floors) <- c("NumFloors","1940", "1950", "1960", "1970","1980", "1990", "2000", "2010")
+
+comb.cnt.floors<- full_join(cnt.floors[[9]], comb.cnt.floors, by = "NumFloors")
+
+comb.cnt.floors<- full_join(cnt.floors[[8]], comb.cnt.floors, by = "NumFloors")
+
+comb.cnt.floors<- full_join(cnt.floors[[7]], comb.cnt.floors, by = "NumFloors")
+
+colnames(comb.cnt.floors) <- c("NumFloors", "1910","1920", "1930", "1940","1950", "1960", "1970","1980", "1990", "2000", "2010")
+
+comb.cnt.floors<- full_join(cnt.floors[[6]], comb.cnt.floors, by = "NumFloors")
+
+comb.cnt.floors<- full_join(cnt.floors[[5]], comb.cnt.floors, by = "NumFloors")
+
+comb.cnt.floors<- full_join(cnt.floors[[4]], comb.cnt.floors, by = "NumFloors")
+
+colnames(comb.cnt.floors) <- c("NumFloors", "1880","1890", "1900", "1910", "1920", "1930", "1940","1950", "1960", "1970","1980", "1990", "2000", "2010")
+
+comb.cnt.floors<- full_join(cnt.floors[[3]], comb.cnt.floors, by = "NumFloors")
+
+comb.cnt.floors<- full_join(cnt.floors[[2]], comb.cnt.floors, by = "NumFloors")
+
+comb.cnt.floors<- full_join(cnt.floors[[1]], comb.cnt.floors, by = "NumFloors")
+
+colnames(comb.cnt.floors) <- c("NumFloors","1850" ,"1860","1870","1880", "1890", "1900", "1910", "1920", "1930", "1940","1950", "1960", "1970","1980", "1990", "2000", "2010")
+```
+
+```{r}
+comb.cnt.floors <- arrange(comb.cnt.floors, NumFloors)
+
+comb.cnt.floors$NumFloors[is.na(comb.cnt.floors$NumFloors)] <- "NoData"
+
+row.names(comb.cnt.floors) <- comb.cnt.floors$NumFloors
+comb.cnt.floors <- comb.cnt.floors[,-1]
+```
+
+```{r}
+comb.cnt.floors.mat <- as.matrix(comb.cnt.floors)
+comb.cnt.floors.mat[is.na(comb.cnt.floors.mat)] <- 0
+
+comb.cnt.floors.mat <- scale(comb.cnt.floors.mat, center=FALSE, scale=colSums(comb.cnt.floors.mat))
+
+#test a column, should sum to 1
+sum(comb.cnt.floors.mat[,6])
+
+corrplot(comb.cnt.floors.mat, method = "square", is.corr = F, addCoefasPercent = T, order = "original")
+```
+
+This leaves a lot to be desired. You can't really see the rise of taller buildings for each decade. I need to increase the visibility of the lower-frequency bands. Also, the labels are unreadable. 
+
+*Create a graph that indicates if there is  a lower value per floor for buildings constructed during WWII*
+
+```{r}
+floors.value <- nyc.taxplots %>% select(YearBuilt, NumFloors, AssessTot)
+  
+floors.value$NumFloors[floors.value$NumFloors == 0 ] <- NA
+
+floors.value <- mutate(floors.value, ValuePerFloor = AssessTot / NumFloors)
+
+prewar <- floors.value %>% 
+  filter(YearBuilt < 1941) %>% 
+  mutate(era = "Prewar")
+
+war <- floors.value %>%
+  filter(1940 < YearBuilt) %>%
+  filter(YearBuilt < 1946) %>%
+  mutate(era = "War")
+
+postwar <- floors.value %>% 
+  filter(YearBuilt >1945) %>% 
+  mutate(era = "Postwar")
+
+floor.value.era <- bind_rows(prewar, postwar, war)
+
+floor.value.era <- floor.value.era %>% select(ValuePerFloor, era)
+floor.value.era$era <- factor(floor.value.era$era, ordered = T, levels = c("Prewar", "War", "Postwar"))
+
+```
+
+```{r}
+#From: http://stackoverflow.com/questions/5677885/ignore-outliers-in-ggplot2-boxplot
+# compute lower and upper whiskers
+ylim1 = boxplot.stats(floor.value.era$ValuePerFloor)$stats[c(1, 5)]
+
+ggplot(floor.value.era) + 
+  geom_boxplot(aes(factor(era), ValuePerFloor), outlier.shape = NA) + 
+  coord_cartesian(ylim = ylim1*1.05) +
+  labs(title = "Assessed Value Per-Floor in Prewar, WWII, and Postwar Eras", x = "Era", y = "Dollar Value Per Floor")
+  
+```
+
+Based on this chart, it does not look like buildings constructed during U.S. involvement in WWII have a lower value per floor. I would tell my boss that there is an important confounding variable - location - that is unaccounted for in this analysis. Depending on the desireability of the neighborhood, even poorly constructed WWII housing could have a very high assessment value. 
