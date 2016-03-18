@@ -1,4 +1,5 @@
 library(shiny)
+library(googleVis)
 
 # Define UI for application that draws a histogram
 # ui.R
