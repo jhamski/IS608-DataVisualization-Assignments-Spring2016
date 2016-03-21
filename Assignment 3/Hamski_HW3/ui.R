@@ -1,27 +1,22 @@
 library(shiny)
 library(googleVis)
+library('ggplot2')
 
 # Define UI for application that draws a histogram
 # ui.R
 
-shinyUI(fluidPage(
-  titlePanel("My Shiny App"),
-  sidebarLayout(
-    sidebarPanel(p("p creates a paragraph of text."),
-                 p("A new p() command starts a new paragraph. Supply a style attribute to change the format of the entire paragraph.", style = "font-family: 'times'; font-si16pt"),
-                 strong("strong() makes bold text.")),
-    mainPanel(
-      p("p creates a paragraph of text."),
-      p("A new p() command starts a new paragraph. Supply a style attribute to change the format of the entire paragraph.", style = "font-family: 'times'; font-si16pt"),
-      strong("strong() makes bold text."),
-      em("em() creates italicized (i.e, emphasized) text."),
-      br(),
-      code("code displays your text similar to computer code"),
-      div("div creates segments of text with a similar style. This division of text is all blue because I passed the argument 'style = color:blue' to div", style = "color:blue"),
-      br(),
-      p("span does the same thing as div, but it works with",
-        span("groups of words", style = "color:blue"),
-        "that appear inside a paragraph.")
-    )
-  )
-))
+load("crude.mort.2010.Rda")
+load("disease.state.groups.Rda")
+
+states <- lapply(unique(crude.mort.2010$State), as.character)
+cause  <- lapply(unique(crude.mort.2010$ICD.Chapter), as.character)
+
+
+# shiny UI
+shinyUI(pageWithSidebar(
+  headerPanel('Cause of Death by Year, by Type'),
+  sidebarPanel(selectInput("state", "State: ", choices=states, multiple=TRUE, selected='Alabama'),
+               selectInput("cause", "Cause: ", choices=cause, selected='Certain infectious and parasitic diseases')
+  ),
+  mainPanel(plotOutput('values')))
+)

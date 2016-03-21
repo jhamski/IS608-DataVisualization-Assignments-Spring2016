@@ -22,8 +22,9 @@ All.states.2010 <- original.data %>%
   mutate(State = "US")
 
 All.states.2010$Crude.Rate <- All.states.2010$Deaths / All.states.pop.2010 * 100000
+All.states.2010$Year <- 2010
 
-All.states.2010 <- select(All.states.2010, ICD.Chapter, State, Crude.Rate)
+All.states.2010 <- select(All.states.2010, ICD.Chapter, State, Crude.Rate, Year)
 
 crude.mort.2010 <- original.data %>%
   filter(Year == 2010) %>%
@@ -93,9 +94,15 @@ save(disease.state.groups, file = "disease.state.groups.Rda")
 
 #Chart 'sketches' for Shiny (to delete later)
 library(googleVis)
+library(ggplot2)
+
+test.data <- filter(crude.mort.2010, ICD.Chapter %in% "Neoplasms")
+ggplot(test.data, aes(x=State, y=Crude.Rate)) + geom_bar(stat="identity")
+
+
 
 #Chart 1
-Geo=gvisGeoMap(crude.mort.2010, locationvar="State", numvar="Crude.Rate", 
-options=list(region="US", dataMode="regions"))
+Geo=gvisGeoMap(test.data, locationvar="State", numvar="Crude.Rate", 
+               options=list(region="US", dataMode="regions"))
 
 plot(Geo)
