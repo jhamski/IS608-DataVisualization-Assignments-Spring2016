@@ -22,7 +22,7 @@ shinyServer(function(input, output){
   
     output$view <- renderGvis({
     gvisMerge(gvisGeoMap(plot.1.data, locationvar="State", numvar = "Crude.Rate", options=list(region="US", dataMode="regions")), 
-              gvisBarChart(plot.1.data, xvar = "State", yvar = "Crude.Rate", options= list(height = 1000, width = 500)))
+              gvisBarChart(plot.1.data, xvar = "State", yvar = "Crude.Rate", options= list(height = 1000, width = 500)), horizontal = T)
     
    })
   

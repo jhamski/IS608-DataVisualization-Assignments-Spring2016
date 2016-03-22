@@ -12,11 +12,13 @@ cause  <- lapply(unique(crude.mort.2010$ICD.Chapter), as.character)
 
 
 # shiny UI
-shinyUI(pageWithSidebar(
+shinyUI(fluidPage(
+  fluidRow(
   headerPanel('Cause of Death by Category in the United States'),
-  sidebarPanel(selectInput("cause", "Cause: ", choices=cause, selected='Certain infectious and parasitic diseases')
-  ),
-  mainPanel(
-    htmlOutput("view")
+  mainPanel(selectInput("cause", "Cause: ", choices=cause, selected='Certain infectious and parasitic diseases')
+  )),
+  
+  fluidRow(
+    column(12, htmlOutput("view"))
   )
 ))
