@@ -88,21 +88,3 @@ disease.state.groups <- complete.disease.data %>%
 
 #Dataframe for Q2
 save(disease.state.groups, file = "disease.state.groups.Rda")
-
-
-
-
-#Chart 'sketches' for Shiny (to delete later)
-library(googleVis)
-library(ggplot2)
-
-test.data <- filter(crude.mort.2010, ICD.Chapter %in% "Neoplasms")
-ggplot(test.data, aes(x=State, y=Crude.Rate)) + geom_bar(stat="identity")
-
-
-
-#Chart 1
-Geo=gvisGeoMap(test.data, locationvar="State", numvar="Crude.Rate", 
-               options=list(region="US", dataMode="regions"))
-
-plot(Geo)

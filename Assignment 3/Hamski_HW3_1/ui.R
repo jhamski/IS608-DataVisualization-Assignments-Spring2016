@@ -1,6 +1,5 @@
 library(shiny)
 library(googleVis)
-library('ggplot2')
 
 # Define UI for application that draws a histogram
 # ui.R
@@ -14,9 +13,10 @@ cause  <- lapply(unique(crude.mort.2010$ICD.Chapter), as.character)
 
 # shiny UI
 shinyUI(pageWithSidebar(
-  headerPanel('Cause of Death by Year, by Type'),
-  sidebarPanel(selectInput("state", "State: ", choices=states, multiple=TRUE, selected='Alabama'),
-               selectInput("cause", "Cause: ", choices=cause, selected='Certain infectious and parasitic diseases')
+  headerPanel('Cause of Death by Category in the United States'),
+  sidebarPanel(selectInput("cause", "Cause: ", choices=cause, selected='Certain infectious and parasitic diseases')
   ),
-  mainPanel(plotOutput('values')))
-)
+  mainPanel(
+    htmlOutput("view")
+  )
+))
