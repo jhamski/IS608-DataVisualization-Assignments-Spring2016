@@ -1,0 +1,89 @@
+<html>
+
+<!--
+    
+   Hello Josh, here's my submission for homework #5. 
+
+   James Hamski
+
+
+    python -m SimpleHTTPServer 8000
+
+-->
+
+<head><title>IS608 Knowledge and Visual Analytics Homework #5</title></head>
+
+<body>
+
+<h1>IS608 Knowledge and Visual Analytics Homework #5</h1>
+<h2>James Hamski </h2>
+
+<script type="text/javascript">
+document.write('<br><p>Insert any word and javascript will reverse the letters.')
+// Basic functions
+function divis(num,d){
+    var evenOdd = 'odd';
+    if (num%2 == 0) {evenOdd = 'even';};
+    var ddiv = false;
+    if (num%d == 0) {ddiv = true;};
+    var dtext; 
+    if (ddiv==true){dtext = 'is '} else (dtext = 'is not ');
+    var str;
+    str = num + ' is ' + evenOdd +' and ' + dtext + 'divisible by ' + d;
+    
+    return(str);
+};
+function calc(){
+    var t = document.getElementById("target");
+    t.innerHTML = divis(document.getElementById('num').value, 3);
+}
+</script>
+<p>
+<form>
+    <input id="num" type="number" size="4">
+    <input type="button" value="check" onClick="calc();">
+</form>
+</p>
+
+<div id="target"></div>
+
+<script type="text/javascript" src="other_script.js"></script>
+
+<script type="text/javascript"> document.write(myScript());</script>
+
+
+<!-- 
+My answer. 
+-->
+
+<script type="text/javascript">
+document.write('<br><p>Insert any word and the browser will reverse the letters using Javascript!')
+ 
+function word(word){
+
+    
+    return(word)
+}
+
+function echoword(){
+    var t = document.getElementById("wordreverse");
+    t.innerHTML = word(document.getElementById('word').value);
+}
+
+</script>
+<p>
+<form>
+    <input id="word" type="text" size="12">
+    <input type="button" value="check" onClick="echoword();">
+</form>
+</p>
+
+<div id="wordreverse"></div>
+
+<script type="text/javascript" src="other_script.js"></script>
+
+<script type="text/javascript"> document.write(myScript());</script>
+
+
+</body>
+</html>
