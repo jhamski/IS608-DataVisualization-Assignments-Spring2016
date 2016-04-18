@@ -44,10 +44,38 @@ function echoword(){
 
 <div id="wordreverse"></div>
 
-<script type="text/javascript" src="other_script.js"></script>
 
-<script type="text/javascript"> document.write(myScript());</script>
+<!-- 
+Problem 2
+-->
 
+<!-- 
+http://stackoverflow.com/questions/8454977/how-do-i-multiply-each-member-of-an-array-by-a-scalar-in-javascript
+-->
+
+<script type="text/javascript">
+	document.write('<br><p>Insert any number and the browser will print its first 20 multiples using Javascript!')
+
+	function multiply (n) {
+		var mults = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20].map(function(x) { return x * n; });
+
+		return(mults)
+	};
+
+	function maketable(){
+	    var t = document.getElementById("target2");
+	    t.innerHTML = multiply(document.getElementById('num2').value);
+	}
+</script>
+
+<p>
+<form>
+    <input id="num2" type="number" size="4">
+    <input type="button" value="check" onClick="maketable();">
+</form>
+</p>
+
+<div id="target2"></div>
 
 </body>
 </html>
