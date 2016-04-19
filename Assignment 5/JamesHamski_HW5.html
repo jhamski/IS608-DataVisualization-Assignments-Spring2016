@@ -47,24 +47,64 @@ function echoword(){
 
 <!-- 
 Problem 2
--->
 
-<!-- 
+Using Stackoverflow driven development...
+
 http://stackoverflow.com/questions/8454977/how-do-i-multiply-each-member-of-an-array-by-a-scalar-in-javascript
+
+http://stackoverflow.com/questions/8495687/split-array-into-chunks
+
+http://stackoverflow.com/questions/15164655/generate-html-table-from-2d-javascript-array
+
+I can't get that 'undefined' to go away...did find this:
+
+http://stackoverflow.com/questions/27503696/when-creating-a-table-inside-a-div-text-undefined-shows-up-for-no-reason
 -->
 
 <script type="text/javascript">
 	document.write('<br><p>Insert any number and the browser will print its first 20 multiples using Javascript!')
 
 	function multiply (n) {
-		var mults = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20].map(function(x) { return x * n; });
+		var mults = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20].map(function(x) { return x * n; });		
 
 		return(mults)
 	};
 
+
+	function createTable(n) {
+	  var mults = multiply(n)
+
+	  var chunks = [], i = 0, n = mults.length;
+
+	  while (i < n) {
+	    chunks.push(mults.slice(i, i += 4));
+	  }
+
+	  tableData = chunks
+
+	  var table = document.createElement('table');
+	  var tableBody = document.createElement('tbody');
+
+	  tableData.forEach(function(rowData) {
+	    var row = document.createElement('tr');
+
+	    rowData.forEach(function(cellData) {
+	      var cell = document.createElement('td');
+	      cell.appendChild(document.createTextNode(cellData));
+	      row.appendChild(cell);
+	    });
+
+	    tableBody.appendChild(row);
+	  });
+
+	  table.appendChild(tableBody);
+	  document.body.appendChild(table);
+	};
+
 	function maketable(){
 	    var t = document.getElementById("target2");
-	    t.innerHTML = multiply(document.getElementById('num2').value);
+	    t.innerHTML = createTable(document.getElementById('num2').value)
+	    //t.innerHTML = multiply(document.getElementById('num2').value);
 	}
 </script>
 
