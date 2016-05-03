@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Basic Bar Chart</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type="text/css">
+        
+        body {
+        background-color: lightblue;
+        }
+        
+        .axis text{
+          font-family: Helvetica, Arial, sans-serif;
+          font-size: 8px;
+          text-anchor: end;
+        }
+        .axis path{
+          fill:none;
+          stroke:black;
+          stroke-width: 0.5px;
+          shape-rendering: crispEdges;
+        }
+        .bar{
+            stroke: none;
+            fill: steelblue;
+        }
+        .textlabel{
+            font-family: Helvetica, Arial, sans-serif;
+            font-size:10px;
+            text-anchor: middle;
+        }
+
+    </style>
+</head>
+<body>
+    <h1 align="center">Average Expected Income Increase by Education Level</h1>
+    <h2 align="center">All Survey Responses in 2015</h2>
+    
+    <p>Sources: Income expectations come from the Federal Reserve Bank of New York Survey of Consumer Expectations Microdata, 2016. This survey is the average of respondent's answers to the question "What do you expect the change in your household income to be in 12 months?".</p>
+
+    <div id = "barchart"></div>
+<!-- Source: http://jrue.github.io/coding/2014/exercises/basicbarchart/-->
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script>
+        //your d3 code will go here
+        var margin = {top:20, right:50, bottom:20, left:50},
+            width  = 400,
+            height = 200;
+
+        var svg = d3.select("#barchart")
+            .append("svg")
+            .attr("width", "100%")
+            .attr("height", "100%")
+            .attr("viewBox", "0 0 " + width + " " + height);
+
+        var yScale = d3.scale.linear()
+            .range([height - margin.top - margin.bottom, 0]);
+
+        var xScale = d3.scale.ordinal()
+            .rangeRoundBands([0, width - margin.right - margin.left], .1);
+
+        var xAxis = d3.svg.axis()
+            .scale(xScale)
+            .orient("bottom");
+
+        var yAxis = d3.svg.axis()
+            .scale(yScale)
+            .orient("left");
+
+        d3.csv("consumer_expectations.csv", function(error, data){
+            console.log(data);
+            //map function goes through every element, then returns a number for median price
+            data = data.map(function(d){ 
+                d["mean_income_expectation"] = +d["mean_income_expectation"]; 
+                console.log(d);
+                return d;
+            });
+
+            //yscale's domain is from zero to the maximum "Median Price" in your data
+            yScale.domain([0, d3.max(data, function(d){ return d["mean_income_expectation"]; })]);
+
+            //xscale is unique values in your data (Age Group, since they are all different)
+            xScale.domain(data.map(function(d){ return d["education"]; }))
+
+            svg.append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+                .selectAll(".bar")
+                .data(data)
+                .enter()
+                .append("rect")
+                .attr("class", "bar")
+                .attr("x", function(d){ return xScale(d["education"]); })
+                .attr("y", function(d){ return yScale(d["mean_income_expectation"]); })
+                .attr("height", function(d){ return height - margin.top - margin.bottom - yScale(d["mean_income_expectation"]); })
+                .attr("width", function(d){ return xScale.rangeBand(); });
+
+            //adding y axis to the left of the chart
+            svg.append("g")
+                .attr("class", "y axis")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+                .call(yAxis);
+
+            //adding x axis to the bottom of chart
+            svg.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(" + margin.left + "," + (height - margin.bottom) + ")")
+                .call(xAxis);
+             })
+
+
+    </script>
+</body>
+</html>
