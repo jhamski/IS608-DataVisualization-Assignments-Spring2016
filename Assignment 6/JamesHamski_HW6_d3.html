@@ -12,7 +12,7 @@
         
         .axis text{
           font-family: Helvetica, Arial, sans-serif;
-          font-size: 8px;
+          font-size: 6px;
           text-anchor: end;
         }
         .axis path{
@@ -27,7 +27,7 @@
         }
         .textlabel{
             font-family: Helvetica, Arial, sans-serif;
-            font-size:10px;
+            font-size:6px;
             text-anchor: middle;
         }
 
@@ -37,14 +37,14 @@
     <h1 align="center">Average Expected Income Increase by Education Level</h1>
     <h2 align="center">All Survey Responses in 2015</h2>
     
-    <p>Sources: Income expectations come from the Federal Reserve Bank of New York Survey of Consumer Expectations Microdata, 2016. This survey is the average of respondent's answers to the question "What do you expect the change in your household income to be in 12 months?".</p>
+    <p>Sources: Income expectations come from the Federal Reserve Bank of New York Survey of Consumer Expectations Microdata, 2016. This graph displays the average of respondent's answers to the question "What do you expect the change in your household income to be in 12 months?".</p>
 
     <div id = "barchart"></div>
 <!-- Source: http://jrue.github.io/coding/2014/exercises/basicbarchart/-->
     <script src="http://d3js.org/d3.v3.min.js"></script>
     <script>
         //your d3 code will go here
-        var margin = {top:20, right:50, bottom:20, left:50},
+        var margin = {top:20, right:50, bottom:100, left:50},
             width  = 400,
             height = 200;
 
@@ -105,10 +105,15 @@
             svg.append("g")
                 .attr("class", "x axis")
                 .attr("transform", "translate(" + margin.left + "," + (height - margin.bottom) + ")")
-                .call(xAxis);
+                .call(xAxis)
+            .selectAll("text")
+                .attr("y", 0)
+                .attr("x", 2)
+                .attr("dy", ".35em")
+                .attr("transform", "rotate(90)")
+                .style("text-anchor", "start");
+
              })
-
-
     </script>
 </body>
 </html>
